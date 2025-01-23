@@ -5,7 +5,7 @@ output: html_notebook
 
 This R-notebook will go through the process of replicating the cooling center optimization in ArcPro using R. Being able to replicate the process in an open source software will enable greater access to the approach be eleminating licensing costs. Additionally, this code will serve as the base for the R-Shiny app which will allow me to present the optimization in an web based interface that decision makers can use directly. In order to replicate the optimization process I will have to use python code in addition to R. I will be using the spopt python library to conduct the optimization and report back results that I can further analyze with R functions. 
 
-```{r}
+```{r Setup Python Virtual Environment}
 library(tidyverse)
 library(reticulate)
 
@@ -18,3 +18,17 @@ virtualenv_install(vrt.env, python.packages)
 
 ```
 
+
+#### Cooling Center Optimization Data
+
+For now, I'm reading in a subset of the data I used for Maricopa County. I subset and cleaned the data in ArcGIS. I'm hoping by developing this with a smaller dataset it will help move the development of the code along. Once the code functions properly with the smaller dataset I will attempt to run it on larger dataset. 
+
+##### Input Data Files
+
+```{r Import Data}
+
+```
+
+#### SPOPT Python Code
+
+The following code chunk will be the python code for setting up and running the spopt functions for the optimization. T
