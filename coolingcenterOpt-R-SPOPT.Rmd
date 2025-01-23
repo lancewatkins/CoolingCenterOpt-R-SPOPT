@@ -1,0 +1,20 @@
+---
+title: "Cooling Center Optimization Utilizing Python SPOPT Library"
+output: html_notebook
+---
+
+This R-notebook will go through the process of replicating the cooling center optimization in ArcPro using R. Being able to replicate the process in an open source software will enable greater access to the approach be eleminating licensing costs. Additionally, this code will serve as the base for the R-Shiny app which will allow me to present the optimization in an web based interface that decision makers can use directly. In order to replicate the optimization process I will have to use python code in addition to R. I will be using the spopt python library to conduct the optimization and report back results that I can further analyze with R functions. 
+
+```{r}
+library(tidyverse)
+library(reticulate)
+
+## Reticulate to start up your virtual python environment
+vrt.env <- "rpython-virtualenv-coolingcenteropt"
+use_virtualenv("rpython-virtualenv-coolingcenteropt")
+## Install python libraries into virtual environment
+python.packages <- c("scipy","spopt","geopandas","pulp","shapely","spaghetti")
+virtualenv_install(vrt.env, python.packages)
+
+```
+
