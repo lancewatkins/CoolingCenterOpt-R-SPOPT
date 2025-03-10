@@ -3,7 +3,10 @@ title: "Cooling Center Optimization Utilizing Python SPOPT Library"
 output: html_notebook
 ---
 
-This R-notebook will go through the process of replicating the cooling center optimization in ArcPro using R. Being able to replicate the process in an open source software will enable greater access to the approach be eleminating licensing costs. Additionally, this code will serve as the base for the R-Shiny app which will allow me to present the optimization in an web based interface that decision makers can use directly. In order to replicate the optimization process I will have to use python code in addition to R. I will be using the spopt python library to conduct the optimization and report back results that I can further analyze with R functions. 
+This R-notebook will go through the process of replicating the cooling center optimization in ArcPro using R. Being able to replicate the process in an open source software will enable greater access to the approach be eliminating licensing costs. Additionally, this code will serve as the base for the R-Shiny app which will allow me to present the optimization in an web based interface that decision makers can use directly. 
+
+There seem to be a handful of open source coding libraries I can use to replicate the location modeling I conducted in ArcPro. For now I'm going to attempt two different approaches using a subset of the data I've used in ArcPro. The first approach uses the Maxcovr package in R. The second approach is to use functions in the Pysal libraries in Python. The second approach could be a bit more robust especially with location modeling using a network. However, both tools have been used in the context of a road network. Both approaches use solvers to identify the optimized set of locations to meet demand. For now I'm testing both approaches but in the design of the dashboard I will lean on one approach. 
+
 
 ```{r Setup Python Virtual Environment}
 library(tidyverse)
@@ -19,16 +22,14 @@ virtualenv_install(vrt.env, python.packages)
 ```
 
 
-#### Cooling Center Optimization Data
-
-For now, I'm reading in a subset of the data I used for Maricopa County. I subset and cleaned the data in ArcGIS. I'm hoping by developing this with a smaller dataset it will help move the development of the code along. Once the code functions properly with the smaller dataset I will attempt to run it on larger dataset. 
-
-##### Input Data Files
-
-```{r Import Data}
+#### Maxcovr Approach 
+```{r}
 
 ```
 
-#### SPOPT Python Code
 
-The following code chunk will be the python code for setting up and running the spopt functions for the optimization. T
+#### SPOPT Python Code
+```{r}
+
+```
+
