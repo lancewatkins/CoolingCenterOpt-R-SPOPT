@@ -23,8 +23,22 @@ virtualenv_install(vrt.env, python.packages)
 
 
 #### Maxcovr Approach 
-```{r}
 
+Maxcovr contains several functions that can be useful for location modeling.This includes the maxcovr function itself which, is the function to compute the MCLP. By default maxcovr calculates euclidean distance, which is not helpful for modeling travel along a network. However, the maxcovr function has options to input a distance matrix built on network distances. Additionally, this funciton has been used in this context before. I just need to be careful regarding the use of other functions because many calculate distance from lat lon coordinates. 
+
+With this approach the maxcovr function is used through an optimization solver to identify the optimal solution. In order to run maxcovr we need to calculate the origin-destination (OD) distance matrix for every facility and demand point in our analysis. We are particularly interested in identifying the shortest distances from demand points to facilities. Maxcovr function will use this distance matrix to identify the optimal solution.
+
+##### General Steps
+1. Read in demand, facility, and road network data
+2. Clean data
+3. Calculate OD distance matrix between facilities and demand. Ensure network distances are used
+4. Run Maxcovr 
+5. Review Results
+
+```{r maxcovr-approach}
+library(maxcovr)
+library(dplyr)
+library()
 ```
 
 
