@@ -21,6 +21,27 @@ virtualenv_install(vrt.env, python.packages)
 
 ```
 
+#### Input Data
+
+For the time being, I'm going to read in the facility and demand point data which will be used to calculate the OD matrix which informs the optimization approach. I'm doing some minor editing of the input data to strip away PII and to merge the data into one data frame.
+```{r Input_data}
+
+library(dplyr)
+library(sf)
+
+candidatefac.file <- "../data/CoolingCenterDashboard-testdata/final_candidate_sites2024PhxUrbanCoresub.shp"
+coolingfac.file <- "../data/CoolingCenterDashboard-testdata/Grp18_RespiteCoolingCenters2024_PhxUrbanCoreSub.shp"
+homelessdmn.file <- "../data/CoolingCenterDashboard-testdata/Homeless_Outreach_PhxUrbanCoreSub.shp"
+residentialdmn.file <- "../data/CoolingCenterDashboard-testdata/Residential_Parcel_Sample_PhxUrbanCoreSub.shp"
+
+candidate.fac <- st_read(candidatefac.file)
+cooling.fac <- st_read(coolingfac.file)
+homeless.dmn <- st_read(homelessdmn.file)
+residential.dmn <- st_read(residentialdmn.file)
+
+
+
+```
 
 #### Maxcovr Approach 
 
