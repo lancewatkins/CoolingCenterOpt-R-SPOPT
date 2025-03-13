@@ -38,7 +38,9 @@ With this approach the maxcovr function is used through an optimization solver t
 ```{r maxcovr-approach}
 library(maxcovr)
 library(dplyr)
-library()
+library(sf)
+
+
 ```
 
 
