@@ -49,6 +49,8 @@ Maxcovr contains several functions that can be useful for location modeling.This
 
 With this approach the maxcovr function is used through an optimization solver to identify the optimal solution. In order to run maxcovr we need to calculate the origin-destination (OD) distance matrix for every facility and demand point in our analysis. We are particularly interested in identifying the shortest distances from demand points to facilities. Maxcovr function will use this distance matrix to identify the optimal solution.
 
+I'm currently trying to figure out a way forward for driving the OD matrix in R. I'm currently avoiding Dodger since the distances are weighted based on pedestrian travel. The weighting is designed so that paths suitable for pedestrain travel are preferred but the weighting does result in slightly larger distance measures. Right now I'm trying to see if I can get around the 10,000 point limit for calculated OD matrix via OSRM. If I can set up my own OSRM server or find one other than the default then I should be able to use this approach. 
+
 ##### General Steps
 1. Read in demand, facility, and road network data
 2. Clean data
