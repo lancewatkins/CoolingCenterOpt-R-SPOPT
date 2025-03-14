@@ -39,8 +39,28 @@ cooling.fac <- st_read(coolingfac.file)
 homeless.dmn <- st_read(homelessdmn.file)
 residential.dmn <- st_read(residentialdmn.file)
 
+## Combine the facility and demand point files into one file before bringing it into Maxcovr Approach
+## The combined st object will also include 4 columns: PointID, PointType, Geometry. 
 
+candidate.fac$PointType <- "Candidate Facility"
+candidate.fac$PointSource <- "Parcel Dataset"
+candidatefac.sub <- candidate.fac[,c("FacilityID","PointType","PointSource","geometry")]
+colnames(candidatefac.sub) <- c("PointID","PointType","PointSource","geometry")
 
+cooling.fac$PointType <- "Required Facility"
+cooling.fac$PointSource <- "Heat Relief Network"
+coolingfac.sub <- cooling.fac[,c("FacilityID","PointType","PointSource","geometry")]
+colnames(coolingfac.sub) <- c("PointID","PointType","PointSource","geometry")
+
+homeless.dmn$PointType <- "Demand Point"
+homeless.dmn$PointSource <- "Homeless Outreach Survey"
+homelessdmn.sub <- homeless.dmn[,c("PointID","PointType","PointSource","geometry")]
+
+residential.dmn$PointType <- "Demand Point"
+residential.dmn$PointSource <- "Residential Parcel Dataset"
+residentialdmn.sub <- residential.dmn[,c("PointID","PointType","PointSource","geometry")]
+
+points.sf <- rbind(candidatefac.sub,coolingfac.sub,homelessdmn.sub,residentialdmn.sub)
 ```
 
 #### Maxcovr Approach 
