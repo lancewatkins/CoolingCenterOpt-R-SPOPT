@@ -87,8 +87,108 @@ library(sf)
 ```
 
 
-#### SPOPT Python Code
+### Maxcovr outline from Gemini
+
 ```{r}
+# 1. Install and load the 'osrm' package
+# If you don't have it installed, uncomment the line below and run it:
+# install.packages("osrm")
+library(osrm)
+
+# 2. Prepare your location data
+# Create a data frame with your points.
+# Each row represents a location (e.g., a potential facility site or a demand point).
+# It must have unique IDs and longitude/latitude coordinates.
+# Let's create 5 dummy locations for demonstration.
+locations_df <- data.frame(
+  id = c("A", "B", "C", "D", "E"),
+  lon = c(-123.1814231, -123.25, -123.1, -123.3, -123.15),
+  lat = c(49.195113, 49.2, 49.15, 49.25, 49.18)
+)
+
+# You can add more locations as needed.
+# For Maxcovr, you'll typically have two sets of points:
+#   - Candidate facility locations
+#   - Demand points (e.g., population centroids)
+# For simplicity, this example calculates a matrix between all these 5 points.
+# If you have separate origin and destination sets, you'd create two data frames.
+
+# 3. Connect to your local OSRM server
+# Set the OSRM server URL. This should match your Docker setup.
+# Ensure your OSRM Docker container is running and accessible at this address.
+options(osrm.server = "http://127.0.0.1:5000/")
+
+# 4. Calculate the network distance matrix using osrmTable()
+# The 'loc' argument takes your data frame of locations.
+# The 'measure' argument specifies what you want in the matrix ("distance" for meters, "duration" for seconds).
+# The 'osrmTable' function will return a list containing:
+#   - $distances: The distance matrix (in meters by default)
+#   - $durations: The duration matrix (in seconds by default)
+#   - $sources: Information about the source points
+#   - $destinations: Information about the destination points
+
+cat("Calculating OSRM distance matrix...\n")
+osrm_matrix_result <- osrmTable(loc = locations_df, measure = "distance")
+
+# Extract the distance matrix
+distance_matrix <- osrm_matrix_result$distances
+
+# Rename rows and columns for clarity (optional, but good practice)
+rownames(distance_matrix) <- locations_df$id
+colnames(distance_matrix) <- locations_df$id
+
+cat("\nOSRM Distance Matrix (in meters):\n")
+print(distance_matrix)
+
+# You can also get the duration matrix if needed
+# duration_matrix <- osrm_matrix_result$durations
+# rownames(duration_matrix) <- locations_df$id
+# colnames(duration_matrix) <- locations_df$id
+# cat("\nOSRM Duration Matrix (in seconds):\n")
+# print(duration_matrix)
+
+# 5. Integrate with Maxcovr
+# Now that you have 'distance_matrix', you can use it with your Maxcovr function.
+# The exact arguments for Maxcovr will depend on how it's defined.
+# Below is a conceptual placeholder for how you might use it.
+
+# Assuming 'Maxcovr' is a function that takes:
+#   - 'distance_matrix': The network distance matrix
+#   - 'demand_points': A vector or data frame of demand points (e.g., population at each location)
+#   - 'facility_capacity': The coverage capacity of each facility
+#   - 'p': The number of facilities to select
+
+# Dummy data for Maxcovr (replace with your actual data)
+# For Maxcovr, you'd typically have a `demand` vector and a `coverage_radius`
+# Let's assume demand is 1 for all points and coverage radius is 50000 meters (50 km)
+demand_points <- rep(1, nrow(locations_df)) # Assuming equal demand for all locations
+names(demand_points) <- locations_df$id
+coverage_radius_meters <- 50000 # Example: 50 km coverage radius
+
+# Placeholder for your Maxcovr function call
+# If Maxcovr is from a specific package, you'd load that package first.
+# For example, if it's from the 'spatstat' or a custom package.
+
+# Example of how Maxcovr might be structured (this is NOT the actual Maxcovr function,
+# but illustrates how you'd pass the distance_matrix)
+# You would replace this with your actual Maxcovr function call.
+
+# If Maxcovr is a custom function you've defined or from a specific package,
+# ensure it's loaded and its parameters match what you're providing.
+
+# For instance, if Maxcovr takes a distance matrix and a coverage threshold:
+# selected_facilities <- Maxcovr(
+#   distances = distance_matrix,
+#   demand = demand_points,
+#   coverage_threshold = coverage_radius_meters,
+#   num_facilities_to_select = 2 # Example: select 2 facilities
+# )
+
+# cat("\nMaxcovr would be called here with the 'distance_matrix'.\n")
+# cat("The result would be the selected facility locations based on your criteria.\n")
+
+# Important: Ensure your OSRM Docker container is running before executing this R code.
+# You can verify its status by running `docker ps` in your terminal.
 
 ```
 
