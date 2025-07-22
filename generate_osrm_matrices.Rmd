@@ -1,0 +1,64 @@
+---
+title: "Cooling Center Optimization Generateing OSRM Matrices"
+output: html_notebook
+---
+
+This R notebook will contain the code chunks for preparing spatial data and generating the OSRM distance matrices, which will be used in the location modeling later on.  
+
+---
+title: "OSRM Distance Matrix Generation for Phoenix Cooling Centers"
+author: "Your Name"
+date: "July 22, 2025"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+# Setup chunk: This runs R code silently when knitting/running notebook
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+
+1. Project Setup and Data Paths
+
+This section defines the working directory and paths for input/output data. Ensure your Docker OSRM servers are running before executing the OSRM query chunks!
+
+```{r}
+# IMPORTANT: Change this path to where your R project is located.
+# This directory should contain your .Rmd file and a 'data' subfolder for inputs/outputs.
+setwd("C:/Users/raelu/ASU Dropbox/Lance Watkins/ASU/projects/CoolingCenterSpatiaOptimization/CoolingCenterOpt-R-SPOPT")
+
+# Create a 'data' sub-directory if it doesn't exist
+if (!dir.exists("data")) {
+  dir.create("data")
+}
+
+# Define paths for your input CSV files (assuming they are in the 'data' subfolder)
+input_data_path <- "data/"
+output_data_path <- "data/" # Where to save the generated .rds files
+
+message("Project setup complete. Data paths defined.")
+```
+
+2. Install and Load Required R Packages
+
+Ensure these packages are installed. If not, uncomment and run install.packages() first.
+
+```{r}
+# install.packages(c("sf", "osrm", "dplyr", "lpSolve", "R.utils"))
+
+library(sf)      # For Simple Features (spatial data handling)
+library(osrm)    # To interface with the OSRM server
+library(dplyr)   # For data manipulation (e.g., mutate, bind_rows)
+library(R.utils) # For the chunking function (used within safe_osrmTable)
+library(lpSolve) # Will be needed for the MCLP optimization later on
+```
+
+
+
+
+
+
+
+
+
