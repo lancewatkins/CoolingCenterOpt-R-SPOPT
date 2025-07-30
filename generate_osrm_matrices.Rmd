@@ -6,9 +6,9 @@ output: html_notebook
 This R notebook will contain the code chunks for preparing spatial data and generating the OSRM distance matrices, which will be used in the location modeling later on.  
 
 ---
-title: "OSRM Distance Matrix Generation for Phoenix Cooling Centers"
-author: "Your Name"
-date: "July 22, 2025"
+title: OSRM Distance Matrix Generation for Phoenix Cooling Centers
+author: Lance Watkins
+date: July 22, 2025
 output: html_notebook
 ---
 
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 
-1. Project Setup and Data Paths
+## 1. Project Setup and Data Paths
 
 This section defines the working directory and paths for input/output data. Ensure your Docker OSRM servers are running before executing the OSRM query chunks!
 
@@ -40,7 +40,7 @@ output_data_path <- "data/" # Where to save the generated .rds files
 message("Project setup complete. Data paths defined.")
 ```
 
-2. Install and Load Required R Packages
+## 2. Install and Load Required R Packages
 
 Ensure these packages are installed. If not, uncomment and run install.packages() first.
 
@@ -55,8 +55,65 @@ library(lpSolve) # Will be needed for the MCLP optimization later on
 ```
 
 
+## 3. Load and Prepare Spatial Data (Using CSV Files)
+
+This section loads your spatial point data (candidate locations, existing centers, demand points) from CSV files and prepares them for OSRM.
+
+```{r load_prepare_data_csvs, message=TRUE}
+message("Loading and preparing spatial data from CSVs...")
+
+# --- IMPORTANT: Ensure your CSV files are in the 'data/' subfolder ---
+# And check that they have the required columns: 'id', 'latitude', 'longitude'.
+# For demand_points.csv, also ensure a 'population' or 'weight' column.
+
+# Load Candidate Locations
+candidate_locs <- read.csv(paste0(input_data_path, "candidate_locations.csv"))
+
+#%>%
+ # st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% # crs 4326 is WGS84 (lat/lon)
+  # Ensure unique 'id' and 'type' columns. Adjust 'id' if your CSV column is named differently.
+  #mutate(type = "candidate",
+#         id = as.character(id)) # Ensure ID is character type
+
+# Load Existing Cooling Center Locations
+existing_locs <- read.csv(paste0(input_data_path, "existing_cooling_centers.csv")) %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
+  # Ensure unique 'id' and 'type' columns. Adjust 'id' if your CSV column is named differently.
+  mutate(type = "existing",
+         id = as.character(id))
+
+# Load Demand Points
+demand_pts <- read.csv(paste0(input_data_path, "demand_points.csv")) %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
+  # Ensure unique 'id' column. Adjust 'id' if your CSV column is named differently.
+  mutate(id = as.character(id)) %>%
+  # Ensure demand points have a 'weight' column (e.g., population count).
+  # If your CSV has a column named 'population', use that. Otherwise, it defaults to 1.
+  mutate(weight = if("population" %in% names(.)) as.numeric(population) else 1) %>%
+  # Handle potential NAs in weight if population column exists but has missing values
+  mutate(weight = ifelse(is.na(weight), 1, weight))
 
 
+# Combine all potential facility locations (candidate + existing)
+# This combined set will be the 'sources' for your OSRM queries.
+all_facilities <- bind_rows(candidate_locs, existing_locs) %>%
+  # Add a simple numeric_id for consistent internal matrix indexing,
+  # although we will primarily use the 'id' column for clarity in results.
+  mutate(numeric_id = row_number())
+
+# Optional: Basic check for unique IDs (good practice)
+if (length(unique(all_facilities$id)) != nrow(all_facilities)) {
+  warning("Duplicate 'id' values found in combined all_facilities. This might cause issues with matrix naming.")
+}
+if (length(unique(demand_pts$id)) != nrow(demand_pts)) {
+  warning("Duplicate 'id' values found in demand_pts. This might cause issues with matrix naming.")
+}
+
+message("Spatial data loaded and prepared. Sample of all_facilities:")
+print(head(all_facilities))
+message("Sample of demand_pts:")
+print(head(demand_pts))
+```
 
 
 
