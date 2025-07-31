@@ -44,7 +44,7 @@ message("Project setup complete. Data paths defined.")
 
 Ensure these packages are installed. If not, uncomment and run install.packages() first.
 
-```{r}
+```{r include=FALSE}
 # install.packages(c("sf", "osrm", "dplyr", "lpSolve", "R.utils"))
 
 library(sf)      # For Simple Features (spatial data handling)
@@ -67,7 +67,8 @@ message("Loading and preparing spatial data from CSVs...")
 # For demand_points.csv, also ensure a 'population' or 'weight' column.
 
 # Load Candidate Locations
-candidate_locs <- read.csv(paste0(input_data_path, "candidate_locations.csv"))
+candidate_locs <- read.csv(paste0(input_data_path, "candidate_locations_WGS84.csv"))
+
 
 #%>%
  # st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% # crs 4326 is WGS84 (lat/lon)
