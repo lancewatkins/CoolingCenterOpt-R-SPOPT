@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 This section defines the working directory and paths for input/output data. Ensure your Docker OSRM servers are running before executing the OSRM query chunks!
 
-```{r}
+```{r message=TRUE}
 # IMPORTANT: Change this path to where your R project is located.
 # This directory should contain your .Rmd file and a 'data' subfolder for inputs/outputs.
 setwd("C:/Users/raelu/ASU Dropbox/Lance Watkins/ASU/projects/CoolingCenterSpatiaOptimization/CoolingCenterOpt-R-SPOPT")
