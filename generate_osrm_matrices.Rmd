@@ -69,31 +69,29 @@ message("Loading and preparing spatial data from CSVs...")
 # Load Candidate Locations
 candidate_locs <- read.csv(paste0(input_data_path, "candidate_locations.csv")) %>%
   sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% # crs 4326 is WGS84 (lat/lon)
-  # Ensure unique 'id' and 'type' columns. Adjust 'id' if your CSV column is named differently.
-  dplyr::mutate(type = "candidate",
-         id = as.character(id)) # Ensure ID is character type
+  # Ensure unique 'id' column is of character type. Adjust 'id' if your CSV column is named differently.
+  dplyr::mutate(id = as.character(id))
 
 # Load Existing Cooling Center Locations
 existing_locs <- read.csv(paste0(input_data_path, "existing_cooling_centers.csv")) %>%
   sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
-  # Ensure unique 'id' and 'type' columns. Adjust 'id' if your CSV column is named differently.
-  dplyr::mutate(type = "existing",
-         id = as.character(id))
+  # Ensure unique 'id' column is of character type. Adjust 'id' if your CSV column is named differently.
+  dplyr::mutate(id = as.character(id)) %>%
+  # Add an Address column so the columns align with candidate locations dataframe as well. For now populate with NA
+  dplyr::mutate(address = NA) %>%
+  dplyr::select(c("id","address","type","geometry"))
 
 # Load Demand Points
 demand_pts <- read.csv(paste0(input_data_path, "demand_points.csv")) %>%
   sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>%
-  # Ensure unique 'id' column. Adjust 'id' if your CSV column is named differently.
-  dplyr::mutate(id = as.character(id)) %>%
-  # Ensure demand points have a 'weight' column (e.g., population count).
-  # If your CSV has a column named 'population', use that. Otherwise, it defaults to 1.
-  dplyr::mutate(weight = if("population" %in% names(.)) as.numeric(population) else 1) %>%
-  # Handle potential NAs in weight if population column exists but has missing values
-  dplyr::mutate(weight = ifelse(is.na(weight), 1, weight))
+  # Ensure unique 'id' column is of character type. Adjust 'id' if your CSV column is named differently.
+  dplyr::mutate(id = as.character(id))
+
 
 
 # Combine all potential facility locations (candidate + existing)
 # This combined set will be the 'sources' for your OSRM queries.
+
 all_facilities <- dplyr::bind_rows(candidate_locs, existing_locs) %>%
   # Add a simple numeric_id for consistent internal matrix indexing,
   # although we will primarily use the 'id' column for clarity in results.
@@ -114,6 +112,8 @@ print(head(demand_pts))
 ```
 
 
+## 4. Define Helper Function for OSRM Queries
 
+## 5. Calculate Network Distance Matrices using OSRM
 
 
