@@ -113,6 +113,7 @@ print(head(demand_pts))
 
 
 ## 4. Define Helper Function for OSRM Queries
+
 This helper function wraps `osrmTable` calls, adding robustness through chunking queries and retries. This is crucial for large datasets. The code in this section defines a single function that acts as a robust wrapper around the standard osrmTable() function from the osrm package. Its main purpose is to make the process of querying the OSRM servers for large datasets more reliable and less prone to crashing or timing out.
 
 This is achieved through two key mechanisms:
@@ -137,7 +138,7 @@ chunk_size: How many destination points to send in a single query.
 
 retries: How many times to retry a failed query.
 
-```{r osrm_helper_function}
+```{r osrm_helper_function, message=TRUE}
 
 safe_osrmTable <- function(src_sf, dst_sf, measure = c("distance", "duration"),
                            server_url, server_port, chunk_size = 500, retries = 3) {
@@ -212,4 +213,35 @@ safe_osrmTable <- function(src_sf, dst_sf, measure = c("distance", "duration"),
 
 ## 5. Calculate Network Distance Matrices using OSRM
 
+This code chunk will use the safe_osrmTable() function to connect to your running OSRM servers and perform the actual distance and duration calculations. This is a computationally intensive process.
+
+Important: Before you run this, please quickly check your PowerShell window and run docker ps to confirm that your osrm-car-server (on port 5000) and osrm-foot-server (on port 5001) are both Up.
+
+**IMPORTANT:** Ensure your Docker OSRM servers (`osrm-car-server` on port 5000 and `osrm-foot-server` on port 5001) are running BEFORE executing these chunks!
+
+```{r calculate_matrices, message=TRUE}
+
+message("\n--- Starting OSRM Query for CAR Travel Matrix ---")
+car_results <- safe_osrmTable(src = all_facilities, dst = demand_pts,
+                              measure = c("distance", "duration"),
+                              server_url = "http://localhost:5000/", # Car server port
+                              server_port = 5000,
+                              chunk_size = 500) # Adjust chunk size based on your system's memory and OSRM server's capacity
+
+distance_matrix_car <- car_results$distances # Distances in meters
+duration_matrix_car <- car_results$durations # Durations in minutes
+message("Car Travel Matrix generated.")
+
+
+message("\n--- Starting OSRM Query for FOOT Travel Matrix ---")
+foot_results <- safe_osrmTable(src = all_facilities, dst = demand_pts,
+                               measure = c("distance", "duration"),
+                               server_url = "http://localhost:5001/", # Foot server port
+                               server_port = 5001,
+                               chunk_size = 500) # Use the same or different chunk size
+
+distance_matrix_foot <- foot_results$distances # Distances in meters
+duration_matrix_foot <- foot_results$durations # Durations in minutes
+message("Foot Travel Matrix generated.")
+```
 
