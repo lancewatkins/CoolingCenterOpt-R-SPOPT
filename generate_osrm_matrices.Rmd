@@ -113,6 +113,102 @@ print(head(demand_pts))
 
 
 ## 4. Define Helper Function for OSRM Queries
+This helper function wraps `osrmTable` calls, adding robustness through chunking queries and retries. This is crucial for large datasets. The code in this section defines a single function that acts as a robust wrapper around the standard osrmTable() function from the osrm package. Its main purpose is to make the process of querying the OSRM servers for large datasets more reliable and less prone to crashing or timing out.
+
+This is achieved through two key mechanisms:
+
+Chunking: It splits your large set of destination points (dst_sf) into smaller, more manageable chunks before sending them to the OSRM server.
+
+Error Handling and Retries: It wraps each query in a tryCatch block, so if a query fails (e.g., due to a network hiccup or a server timeout), it automatically retries it a few times before giving up.
+
+Function Arguments
+
+First, let's look at the arguments the function accepts. These are the inputs you provide when you call it:
+
+src_sf: The sf object for your source locations (your combined all_facilities).
+
+dst_sf: The sf object for your destination locations (your demand_pts).
+
+measure: What you want to calculate, e.g., c("distance", "duration").
+
+server_url, server_port: The address and port of your local Docker OSRM server.
+
+chunk_size: How many destination points to send in a single query.
+
+retries: How many times to retry a failed query.
+
+```{r osrm_helper_function}
+
+safe_osrmTable <- function(src_sf, dst_sf, measure = c("distance", "duration"),
+                           server_url, server_port, chunk_size = 500, retries = 3) {
+
+  message(paste0("Attempting to connect to OSRM server: ", server_url, ":", server_port))
+  osrm::osrm_server(url = server_url, osrm_port = server_port)
+
+  ## Section below is used to ensure checks the source and destination sf objects to ensure they have data and set up the 
+  ## number of chunks needed to process the data
+  num_destinations <- nrow(dst_sf)
+  num_sources <- nrow(src_sf)
+
+  if (num_destinations == 0 || num_sources == 0) {
+    warning("Source or Destination SF object is empty. Returning empty matrices.")
+    return(list(distances = matrix(NA, nrow = num_sources, ncol = num_destinations,
+                                   dimnames = list(src_sf$id, dst_sf$id)),
+                durations = matrix(NA, nrow = num_sources, ncol = num_destinations,
+                                   dimnames = list(src_sf$id, dst_sf$id))))
+  }
+
+  all_distances_chunks <- list()
+  all_durations_chunks <- list()
+
+  num_chunks <- ceiling(num_destinations / chunk_size)
+
+  # This is the core of the function. The for loop iterates through each chunk of your demand points. Inside the loop, a while loop combined with tryCatch attempts to make a query for that chunk. If the query fails (due to a timeout, a bad connection, etc.), tryCatch "catches" the error and the while loop restarts the process, trying again up to the number of times you specified in the retries argument. 
+  
+  for (i in 1:num_chunks) {
+    # Determines the start and end indices for the current chunk of destination points.
+    start_idx <- (i - 1) * chunk_size + 1
+    end_idx <- min(i * chunk_size, num_destinations)
+    current_dst_chunk <- dst_sf[start_idx:end_idx, ]
+
+    message(paste0("  Processing destination chunk ", i, " of ", num_chunks,
+                   " (destinations ", start_idx, "-", end_idx, ") for server ", server_url))
+    
+    # This is the retry logic.
+    attempt <- 1
+    success <- FALSE
+    while (attempt <= retries && !success) {
+      tryCatch({
+        # This is the actual call to the OSRM server for a single chunk.
+        od_chunk <- osrmTable(src = src_sf, dst = current_dst_chunk, measure = measure)
+        all_distances_chunks[[i]] <- od_chunk$distances
+        all_durations_chunks[[i]] <- od_chunk$durations
+        success <- TRUE
+      }, error = function(e) {
+        # If the query fails, it prints a warning, increments the attempt counter,
+        # waits for 5 seconds, and then the while loop tries again.
+        warning(paste0("    OSRM query failed (attempt ", attempt, "): ", e$message, " Retrying..."))
+        attempt <<- attempt + 1
+        Sys.sleep(5) # Wait 5 seconds before retrying
+        if (attempt > retries) {
+          stop(paste0("OSRM query failed after multiple retries for destination chunk ", i, ". Aborting."))
+        }
+      })
+    }
+  }
+
+  final_distances <- do.call(cbind, all_distances_chunks)
+  final_durations <- do.call(cbind, all_durations_chunks)
+
+  rownames(final_distances) <- src_sf$id
+  colnames(final_distances) <- dst_sf$id[1:ncol(final_distances)]
+  rownames(final_durations) <- src_sf$id
+  colnames(final_durations) <- dst_sf$id[1:ncol(final_durations)]
+
+  message(paste0("Successfully generated matrices for server: ", server_url))
+  return(list(distances = final_distances, durations = final_durations))
+}
+```
 
 ## 5. Calculate Network Distance Matrices using OSRM
 
