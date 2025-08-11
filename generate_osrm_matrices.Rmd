@@ -219,7 +219,7 @@ Important: Before you run this, please quickly check your PowerShell window and 
 
 **IMPORTANT:** Ensure your Docker OSRM servers (`osrm-car-server` on port 5000 and `osrm-foot-server` on port 5001) are running BEFORE executing these chunks!
 
-```{r calculate_matrices, message=TRUE}
+```{r calculate_matrices, message=TRUE, warning=TRUE}
 
 message("\n--- Starting OSRM Query for CAR Travel Matrix ---")
 car_results <- safe_osrmTable(src = all_facilities, dst = demand_pts,
