@@ -144,7 +144,10 @@ safe_osrmTable <- function(src_sf, dst_sf, measure = c("distance", "duration"),
                            server_url, server_port, chunk_size = 500, retries = 3) {
 
   message(paste0("Attempting to connect to OSRM server: ", server_url, ":", server_port))
-  osrm::osrm_server(url = server_url, osrm_port = server_port)
+  
+  # This line sets a global option for the osrm package to know which server to use.
+  # This is the correct syntax for your version of the package (4.2.0).
+  options(osrm.server = server_url)
 
   ## Section below is used to ensure checks the source and destination sf objects to ensure they have data and set up the 
   ## number of chunks needed to process the data
