@@ -141,7 +141,7 @@ retries: How many times to retry a failed query.
 ```{r osrm_helper_function, message=TRUE}
 
 safe_osrmTable <- function(src_sf, dst_sf, measure = c("distance", "duration"),
-                           server_url, server_port, chunk_size_src = 200, chunk_size_dst = 200, retries = 3) {
+                           server_url, server_port, chunk_size_src = 500, chunk_size_dst = 500, retries = 3) {
 
   options(osrm.server = server_url)
 
@@ -223,7 +223,8 @@ car_results <- safe_osrmTable(src = all_facilities, dst = demand_pts,
                               measure = c("distance", "duration"),
                               server_url = "http://localhost:5000/", # Car server port
                               server_port = 5000,
-                              chunk_size = 500) # Adjust chunk size based on your system's memory and OSRM server's capacity
+                              chunk_size_src = 500, # NEW: Chunk size for origin points
+                              chunk_size_dst = 500) # NEW: Chunk size for destination points
 
 distance_matrix_car <- car_results$distances # Distances in meters
 duration_matrix_car <- car_results$durations # Durations in minutes
@@ -235,10 +236,52 @@ foot_results <- safe_osrmTable(src = all_facilities, dst = demand_pts,
                                measure = c("distance", "duration"),
                                server_url = "http://localhost:5001/", # Foot server port
                                server_port = 5001,
-                               chunk_size = 500) # Use the same or different chunk size
+                               chunk_size_src = 500, # NEW: Chunk size for origin points
+                               chunk_size_dst = 500) # NEW: Chunk size for destination points
 
 distance_matrix_foot <- foot_results$distances # Distances in meters
 duration_matrix_foot <- foot_results$durations # Durations in minutes
 message("Foot Travel Matrix generated.")
+```
+
+## Step 6: Save the Matrices and Spatial Data
+
+This is the final, and very important, chunk of the data preparation process. It saves all your generated matrices and prepared sf objects to .rds files. The .rds file format is a native R binary format that allows for very fast loading, which is perfect for your Shiny app.
+
+```{r save_data, message=TRUE}
+message("\n--- Saving generated data to .rds files ---")
+
+# Save the Car travel matrices
+saveRDS(distance_matrix_car, paste0(output_data_path, "distance_matrix_car.rds"))
+saveRDS(duration_matrix_car, paste0(output_data_path, "duration_matrix_car.rds"))
+
+# Save the Foot travel matrices
+saveRDS(distance_matrix_foot, paste0(output_data_path, "distance_matrix_foot.rds"))
+saveRDS(duration_matrix_foot, paste0(output_data_path, "duration_matrix_foot.rds"))
+
+# Also save the prepared sf objects, as Shiny will need these for plotting and details.
+saveRDS(all_facilities, paste0(output_data_path, "all_facilities.rds"))
+saveRDS(demand_pts, paste0(output_data_path, "demand_pts.rds"))
+
+
+message("\n--- Saving generated data to CSV files ---")
+
+# The `sf` objects need to be converted to data frames before saving to CSV.
+# This removes the special geometry column that `write.csv()` cannot handle.
+
+# Convert sf objects to data frames
+all_facilities_df <- sf::st_drop_geometry(all_facilities)
+demand_pts_df <- sf::st_drop_geometry(demand_pts)
+
+# Save the data frames as CSV files
+write.csv(all_facilities_df, paste0(output_data_path, "all_facilities.csv"), row.names = FALSE)
+write.csv(demand_pts_df, paste0(output_data_path, "demand_pts.csv"), row.names = FALSE)
+write.csv(distance_matrix_car, paste0(output_data_path, "distance_matrix_car.csv"))
+write.csv(duration_matrix_car, paste0(output_data_path, "duration_matrix_car.csv"))
+write.csv(distance_matrix_foot, paste0(output_data_path, "distance_matrix_foot.csv"))
+write.csv(duration_matrix_foot, paste0(output_data_path, "duration_matrix_foot.csv"))
+
+
+message("All data saved successfully in both .rds and .csv formats! You are now ready to build your Shiny dashboard.")
 ```
 
