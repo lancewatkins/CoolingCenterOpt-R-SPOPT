@@ -1,0 +1,12 @@
+all_facilities.csv
+all_facilities.rds
+demand_pts.csv
+demand_pts.rds
+distance_matrix_car.csv
+distance_matrix_car.rds
+distance_matrix_foot.csv
+distance_matrix_foot.rds
+duration_matrix_car.csv
+duration_matrix_car.rds
+duration_matrix_foot.csv
+duration_matrix_foot.rds
